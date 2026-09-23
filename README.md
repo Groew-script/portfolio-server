@@ -1,4 +1,5 @@
 # Portfolio Server
+<!-- redeploy trigger -->
 
 Este repositório contém um pequeno servidor **Node.js + Express** que serve o seu portfólio estático.
 
