@@ -386,27 +386,39 @@
   </div>
 
   <script>
-    // Cursor
+    // Cursor otimizado (GPU via translate3d)
     const cursor = document.getElementById('cursor');
-    const ring = document.getElementById('cursorRing');
-    document.addEventListener('mousemove', e => {
-      cursor.style.left = e.clientX - 5 + 'px';
-      cursor.style.top  = e.clientY - 5 + 'px';
-      ring.style.left   = e.clientX - 18 + 'px';
-      ring.style.top    = e.clientY - 18 + 'px';
-    });
+    const ring   = document.getElementById('cursorRing');
+    let mx = -100, my = -100, rx = -100, ry = -100, rafRunning = false;
 
-    // Nav scroll
+    document.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      cursor.style.transform = `translate3d(${mx - 4}px, ${my - 4}px, 0)`;
+      if (!rafRunning) { rafRunning = true; requestAnimationFrame(animateRing); }
+    }, { passive: true });
+
+    function animateRing() {
+      rx += (mx - rx - 16) * 0.14;
+      ry += (my - ry - 16) * 0.14;
+      ring.style.transform = `translate3d(${rx}px, ${ry}px, 0)`;
+      if (Math.abs(mx - rx) + Math.abs(my - ry) > 0.5) {
+        requestAnimationFrame(animateRing);
+      } else { rafRunning = false; }
+    }
+
+    // Nav scroll (passive)
     const nav = document.getElementById('nav');
     window.addEventListener('scroll', () => {
       nav.classList.toggle('scrolled', window.scrollY > 50);
-    });
+    }, { passive: true });
 
     // Reveal on scroll
     const reveals = document.querySelectorAll('.reveal');
-    const obs = new IntersectionObserver((entries) => {
-      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
-    }, { threshold: 0.1 });
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -30px 0px' });
     reveals.forEach(r => obs.observe(r));
   </script>
 </body>
