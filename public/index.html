@@ -408,8 +408,51 @@
     }
 
     /* ─── ANIMATIONS ─── */
-    .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.8s ease, transform 0.8s ease; }
-    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+      will-change: opacity, transform;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Cursor usando transform em vez de left/top para ser mais rápido */
+    .cursor {
+      width: 8px; height: 8px;
+      background: var(--white);
+      border-radius: 50%;
+      position: fixed;
+      top: 0; left: 0;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate3d(-100px, -100px, 0);
+      transition: transform 0.05s linear, opacity 0.3s;
+      will-change: transform;
+    }
+    .cursor-ring {
+      width: 32px; height: 32px;
+      border: 1px solid rgba(245,245,240,0.35);
+      border-radius: 50%;
+      position: fixed;
+      top: 0; left: 0;
+      pointer-events: none;
+      z-index: 9998;
+      transform: translate3d(-100px, -100px, 0);
+      transition: transform 0.12s ease-out, opacity 0.3s;
+      will-change: transform;
+    }
+
+    /* Scroll line mais leve */
+    @keyframes scrollLine {
+      0%, 100% { opacity: 0.25; transform: scaleY(1) translateZ(0); }
+      50% { opacity: 0.8; transform: scaleY(0.75) translateZ(0); }
+    }
+
+    /* Pulse mais leve */
+    @keyframes pulse { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
 
     /* ─── RESPONSIVE ─── */
 
@@ -658,59 +701,76 @@
   </footer>
 
   <script>
-    // ─── Custom cursor ───
+    // ─── Custom cursor otimizado (translate3d → GPU) ───
     const cursor = document.getElementById('cursor');
-    const ring = document.getElementById('cursorRing');
-    let mx = 0, my = 0, rx = 0, ry = 0;
+    const ring   = document.getElementById('cursorRing');
+
+    let mx = -100, my = -100;
+    let rx = -100, ry = -100;
+    let rafRunning = false;
 
     document.addEventListener('mousemove', e => {
-      mx = e.clientX; my = e.clientY;
-      cursor.style.left = mx - 5 + 'px';
-      cursor.style.top  = my - 5 + 'px';
-    });
+      mx = e.clientX;
+      my = e.clientY;
+      // Cursor pequeno: instantâneo via CSS transition curta
+      cursor.style.transform = `translate3d(${mx - 4}px, ${my - 4}px, 0)`;
+      if (!rafRunning) { rafRunning = true; requestAnimationFrame(animateRing); }
+    }, { passive: true });
 
     function animateRing() {
-      rx += (mx - rx - 18) * 0.12;
-      ry += (my - ry - 18) * 0.12;
-      ring.style.left = rx + 'px';
-      ring.style.top  = ry + 'px';
-      requestAnimationFrame(animateRing);
+      rx += (mx - rx - 16) * 0.14;
+      ry += (my - ry - 16) * 0.14;
+      ring.style.transform = `translate3d(${rx}px, ${ry}px, 0)`;
+      const dist = Math.abs(mx - rx) + Math.abs(my - ry);
+      if (dist > 0.5) {
+        requestAnimationFrame(animateRing);
+      } else {
+        rafRunning = false;
+      }
     }
-    animateRing();
 
+    // Efeito hover nos links
     document.querySelectorAll('a, button').forEach(el => {
       el.addEventListener('mouseenter', () => {
-        cursor.style.transform = 'scale(2.5)';
-        ring.style.transform = 'scale(1.5)';
-        ring.style.borderColor = 'rgba(245,245,240,0.8)';
+        cursor.style.transform = `translate3d(${mx - 4}px, ${my - 4}px, 0) scale(2.2)`;
+        ring.style.opacity = '0.6';
       });
       el.addEventListener('mouseleave', () => {
-        cursor.style.transform = 'scale(1)';
-        ring.style.transform = 'scale(1)';
-        ring.style.borderColor = 'rgba(245,245,240,0.4)';
+        cursor.style.transform = `translate3d(${mx - 4}px, ${my - 4}px, 0) scale(1)`;
+        ring.style.opacity = '1';
       });
     });
 
-    // ─── Nav scroll ───
+    // Esconder cursor ao sair da janela
+    document.addEventListener('mouseleave', () => {
+      cursor.style.opacity = '0';
+      ring.style.opacity = '0';
+    });
+    document.addEventListener('mouseenter', () => {
+      cursor.style.opacity = '1';
+      ring.style.opacity = '1';
+    });
+
+    // ─── Nav scroll (passive) ───
     const nav = document.getElementById('nav');
     window.addEventListener('scroll', () => {
       nav.classList.toggle('scrolled', window.scrollY > 60);
-    });
+    }, { passive: true });
 
-    // ─── Reveal on scroll ───
-    const reveals = document.querySelectorAll('.reveal');
+    // ─── Reveal on scroll (IntersectionObserver – sem delay pesado) ───
+    const reveals  = document.querySelectorAll('.reveal');
     const observer = new IntersectionObserver(entries => {
-      entries.forEach((entry, i) => {
+      entries.forEach(entry => {
         if (entry.isIntersecting) {
-          setTimeout(() => entry.target.classList.add('visible'), i * 100);
+          entry.target.classList.add('visible');
           observer.unobserve(entry.target);
         }
       });
-    }, { threshold: 0.15 });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
 
     reveals.forEach(el => observer.observe(el));
 
-    // Hero elements appear immediately
+    // Hero aparece logo sem animação de delay
     document.querySelectorAll('#hero .reveal').forEach(el => el.classList.add('visible'));
   </script>
 </body>
