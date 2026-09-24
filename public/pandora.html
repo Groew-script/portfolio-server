@@ -105,12 +105,49 @@
     .reveal { opacity:0;transform:translateY(30px);transition:opacity 0.8s ease,transform 0.8s ease; }
     .reveal.visible { opacity:1;transform:translateY(0); }
 
-    @media (max-width:768px) {
-      nav { padding:1.5rem 2rem; }
-      .project-hero { padding:0 2rem 5rem;min-height:auto;padding-top:8rem; }
-      .hero-mockup { display:none; }
-      section { padding:4rem 2rem; }
-      .back-section { padding:3rem 2rem;flex-direction:column;gap:2rem; }
+    /* Tablet grande */
+    @media (max-width: 1024px) {
+      nav { padding: 1.5rem 2rem; }
+      .project-hero { padding: 0 2rem 5rem; }
+      .hero-mockup { width: 380px; right: 2rem; }
+      section { padding: 5rem 2rem; }
+      .back-section { padding: 3rem 2rem; }
+    }
+
+    /* Tablet */
+    @media (max-width: 768px) {
+      nav { padding: 1.2rem 1.5rem; }
+      .project-hero { padding: 5rem 1.5rem 4rem; min-height: auto; }
+      .hero-mockup { display: none; }
+      .hero-content { max-width: 100%; }
+      .project-title { font-size: clamp(3rem, 14vw, 5rem); }
+      .hero-actions { flex-wrap: wrap; gap: 0.8rem; }
+      .btn { padding: 0.75rem 1.4rem; font-size: 0.65rem; }
+      section { padding: 4rem 1.5rem; }
+      section > div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; gap: 2rem !important; }
+      .features-grid { grid-template-columns: 1fr 1fr; }
+      .tech-grid { gap: 0.8rem; }
+      .back-section { padding: 3rem 1.5rem; flex-direction: column; gap: 1.5rem; align-items: flex-start; }
+    }
+
+    /* Telemóvel */
+    @media (max-width: 480px) {
+      nav { padding: 1rem 1.2rem; }
+      .project-hero { padding: 4.5rem 1.2rem 3.5rem; }
+      .project-label { font-size: 0.58rem; margin-bottom: 1rem; }
+      .project-title { font-size: clamp(2.5rem, 15vw, 4rem); margin-bottom: 1.5rem; }
+      .project-tagline { font-size: 0.75rem; margin-bottom: 2rem; }
+      .tag-list { gap: 0.4rem; }
+      .tag { font-size: 0.55rem; padding: 0.28rem 0.6rem; }
+      .hero-actions { flex-direction: column; }
+      .btn { width: 100%; justify-content: center; }
+      section { padding: 3rem 1.2rem; }
+      .section-label { font-size: 0.58rem; margin-bottom: 2rem; }
+      .section-title { font-size: clamp(1.6rem, 8vw, 2.2rem); }
+      .features-grid { grid-template-columns: 1fr; }
+      .feature-card { padding: 1.8rem; }
+      .tech-item { padding: 0.8rem 1rem; }
+      .back-section { padding: 2.5rem 1.2rem; }
     }
   </style>
 </head>
